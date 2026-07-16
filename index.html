@@ -387,11 +387,13 @@ canvas { max-width: 100%; height: auto !important; box-shadow: 0 2px 16px rgba(0
 
 <div id="loading" class="hidden"><div class="spinner"></div></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.js"></script>
+<script type="module">
+import * as pdfjsLib from './pdfjs/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.min.mjs';
+window.pdfjsLib = pdfjsLib;
+</script>
 
 <script>
-// pdf.js setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.js';
 
 // State
 let treeData = [];
@@ -588,6 +590,9 @@ async function loadPdf(url, filename) {
   loadStartTime = performance.now();
 
   try {
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('PDF 引擎加载失败，请刷新页面重试');
+    }
     try {
       currentPdfDoc = await pdfjsLib.getDocument(url).promise;
     } catch (directErr) {
