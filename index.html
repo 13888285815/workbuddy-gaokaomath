@@ -387,11 +387,11 @@ canvas { max-width: 100%; height: auto !important; box-shadow: 0 2px 16px rgba(0
 
 <div id="loading" class="hidden"><div class="spinner"></div></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.mjs" type="module"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.js"></script>
 
-<script type="module">
+<script>
 // pdf.js setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.js';
 
 // State
 let treeData = [];
@@ -584,11 +584,19 @@ async function loadPdf(url, filename) {
   $currentFilename.textContent = filename;
   $loadTiming.textContent = '加载中...';
   currentPage = 1;
-  selectedPath = path;
+  selectedPath = url;
   loadStartTime = performance.now();
 
   try {
-    currentPdfDoc = await pdfjsLib.getDocument(url).promise;
+    try {
+      currentPdfDoc = await pdfjsLib.getDocument(url).promise;
+    } catch (directErr) {
+      console.warn('Direct PDF load failed, trying fetch fallback:', directErr.message);
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const buffer = await resp.arrayBuffer();
+      currentPdfDoc = await pdfjsLib.getDocument({data: buffer}).promise;
+    }
     totalPages = currentPdfDoc.numPages;
     $pageInfo.textContent = `1 / ${totalPages}`;
     $btnPrev.disabled = true;
