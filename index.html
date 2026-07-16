@@ -482,7 +482,7 @@ function renderTree(nodes, container, depth = 0) {
     const arrow = document.createElement('span');
     arrow.className = 'arrow';
     if (node.type === 'file') arrow.classList.add('hidden');
-    else arrow.classList.add('expanded');
+    else if (node.type === 'category') arrow.classList.add('expanded');
     arrow.textContent = '\u25B6';
     row.appendChild(arrow);
 
@@ -514,6 +514,7 @@ function renderTree(nodes, container, depth = 0) {
     if (node.children && node.children.length > 0) {
       const childrenDiv = document.createElement('div');
       childrenDiv.className = 'tree-children';
+      if (node.type === 'year') childrenDiv.classList.add('collapsed');
       renderTree(node.children, childrenDiv, depth + 1);
       wrapper.appendChild(childrenDiv);
 
